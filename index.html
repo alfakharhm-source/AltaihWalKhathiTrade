@@ -556,6 +556,10 @@
     </div>
     
     <div class="form-panel">
+     
+
+<div class="table-container">
+        </div>
         <div id="cashCounters" style="
 display:none;
 grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
@@ -620,7 +624,104 @@ margin-bottom:20px;
             </div>
         </div>
     </div>
+   <div class="table-container">
+            </div> <!-- نهاية form-panel -->
 
+<!-- فلاتر المخزون -->
+<div id="inventoryFilters" style="
+display:none;
+background:#eef4ff;
+padding:15px;
+border-radius:16px;
+margin-top:15px;
+margin-bottom:15px;
+">
+    <div>
+        <button
+            class="danger"
+            onclick="resetInventoryFilters()"
+        >
+            ❌ إلغاء الفلترة
+        </button>
+    </div>
+<div class="form-row">
+
+    <!-- من تاريخ -->
+   <div class="form-group">
+    <label>🔄 اتجاه التحويل</label>
+
+    <select
+        id="filterDirection"
+        onchange="applyInventoryFilters()"
+    >
+
+        <option value="">
+            كل العمليات
+        </option>
+
+        <option value="out">
+            الصادر
+        </option>
+
+        <option value="in">
+            الوارد
+        </option>
+
+    </select>
+</div>
+
+<div class="form-group">
+    <label>📅 من تاريخ</label>
+
+    <input
+        type="date"
+        id="filterFromDate"
+        onchange="applyInventoryFilters()"
+    >
+</div>
+
+<!-- إلى تاريخ -->
+<div class="form-group">
+    <label>📅 إلى تاريخ</label>
+
+    <input
+        type="date"
+        id="filterToDate"
+        onchange="applyInventoryFilters()"
+    >
+
+    <!-- زر إلغاء -->
+
+
+</div>
+
+<!-- إجمالي الفلترة -->
+<div style="
+display:flex;
+align-items:center;
+justify-content:center;
+background:#2a5298;
+color:white;
+padding:10px 18px;
+border-radius:14px;
+font-weight:bold;
+min-width:220px;
+">
+
+📊 إجمالي الفلترة:
+<span
+    id="filteredTotalAmount"
+    style="
+        margin-right:8px;
+        font-size:20px;
+        color:#ffd54f;
+    "
+>
+0.00
+</span>
+</div>
+</div>
+</div>
     <div class="table-container">
         <table id="operationsTable">
             <thead>
@@ -1290,7 +1391,7 @@ function quickAddOperation(card, type){
 
             number,
             amount: -amount,
-            source: "تحويل سريع صادر",
+            source: "تحويل صادر سريع",
             date,
             expenseType: null,
             transferDirection:
@@ -1303,7 +1404,7 @@ function quickAddOperation(card, type){
 
             number: number + "-IN",
             amount,
-            source: "تحويل سريع وارد",
+            source: "تحويل وارد سريع",
             date,
             expenseType: null,
             transferDirection:
@@ -1396,7 +1497,8 @@ function quickAddOperation(card, type){
     currentOpType = type;
 
     let titleText = ``;
-
+    loadTableData();
+    
     if(type === 'inventory') titleText = '📦 إدارة المخزون';
     else if(type === 'purchases') titleText = '🛒 المبيعات';
     else if(type === 'sales') titleText = '💰 المشتريات';
@@ -1527,6 +1629,11 @@ function quickAddOperation(card, type){
 
     document.getElementById('operationScreen')
     .classList.remove('hidden');
+    // إظهار الفلاتر فقط في المخزون
+document.getElementById('inventoryFilters').style.display =
+(type === 'inventory' || type === 'transfers')
+? 'block'
+: 'none';
 }
     
     function loadTableData() {
@@ -1649,6 +1756,113 @@ function quickAddOperation(card, type){
             actionsCell.appendChild(delBtn);
         }
     }
+}
+
+function convertDateToComparable(dateStr){
+
+    if(!dateStr) return null;
+
+    // إزالة الوقت
+    let onlyDate =
+    dateStr.split(' ')[0];
+
+    let parts =
+    onlyDate.split('/');
+
+    if(parts.length !== 3)
+        return null;
+
+    let day =
+    parts[0].padStart(2,'0');
+
+    let month =
+    parts[1].padStart(2,'0');
+
+    let year =
+    parts[2];
+
+    return `${year}-${month}-${day}`;
+}
+
+function applyInventoryFilters(){
+
+    let direction =
+    document.getElementById('filterDirection').value;
+
+    let fromDate =
+    document.getElementById('filterFromDate').value;
+
+    let toDate =
+    document.getElementById('filterToDate').value;
+
+    // تحديد نوع البيانات الحالية
+    let arr =
+    [...data[`branch${currentBranch}`][currentOpType]];
+
+    // فلترة الصادر والوارد
+    if(direction === 'out'){
+
+        arr =
+        arr.filter(item => item.amount < 0);
+    }
+
+    else if(direction === 'in'){
+
+        arr =
+        arr.filter(item => item.amount > 0);
+    }
+
+    // فلترة من تاريخ
+    if(fromDate){
+
+        arr =
+        arr.filter(item => {
+
+            let itemDate =
+            convertDateToComparable(item.date);
+
+            return itemDate >= fromDate;
+        });
+    }
+
+    // فلترة إلى تاريخ
+    if(toDate){
+
+        arr =
+        arr.filter(item => {
+
+            let itemDate =
+            convertDateToComparable(item.date);
+
+            return itemDate <= toDate;
+        });
+    }
+
+    renderTable(arr);
+
+    // إجمالي الفلترة
+    let filteredTotal =
+    arr.reduce((sum,item)=>
+        sum + item.amount
+    ,0);
+
+    document.getElementById('filteredTotalAmount')
+    .innerText =
+    filteredTotal.toFixed(2);
+}
+
+
+
+function resetInventoryFilters(){
+
+    document.getElementById('filterDirection').value = '';
+
+    document.getElementById('filterFromDate').value = '';
+
+    document.getElementById('filterToDate').value = '';
+document.getElementById('filteredTotalAmount')
+.innerText = '0.00';
+    loadTableData();
 }
     
     function addOperation() {
