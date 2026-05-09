@@ -1761,6 +1761,14 @@ function quickAddOperation(card, type){
     newNumber;
 
     document.getElementById('opAmount').value = '';
+setTimeout(() => {
+
+    const amountInput =
+    document.getElementById('opAmount');
+
+    amountInput.focus();
+
+}, 100);
 
     document.getElementById('opDate').value =
     getCurrentDateTime();
@@ -2834,7 +2842,24 @@ async function () {
 }
 
 startApp();
+document.addEventListener('keydown', function(e){
 
+    // فقط داخل نافذة العمليات
+    const operationScreen =
+    document.getElementById('operationScreen');
+
+    if(operationScreen.classList.contains('hidden'))
+        return;
+
+    // تنفيذ الإضافة عند Enter
+    if(e.key === 'Enter'){
+
+        e.preventDefault();
+
+        addOperation();
+    }
+
+});
 async function clearBranchData(branch) {
 
     const confirmDelete = confirm(
