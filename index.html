@@ -507,10 +507,71 @@
 #cashWithdrawCounter{
     color:red;
 }
+
+.clear-btn{
+    padding:8px 14px;
+    border:none;
+    border-radius:8px;
+    background:#e53935;
+    color:#fff;
+    cursor:pointer;
+    font-size:14px;
+}
+
+.clear-btn:hover{
+    opacity:.9;
+}
+#loadingScreen{
+    position:fixed;
+    top:5;
+    left:0;
+    width:100%;
+    height:100%;
+    display:none;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    z-index:999999;
+}
+
+.loader{
+    width:80px;
+    height:80px;
+    border:8px solid #dbe7ff;
+    border-top:8px solid #2a5298;
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+}
+
+.loading-text{
+    margin-top:20px;
+    font-size:20px;
+    font-weight:bold;
+    color:#2a5298;
+}
+
+@keyframes spin{
+
+    0%{
+        transform:rotate(0deg);
+    }
+
+    100%{
+        transform:rotate(360deg);
+    }
+}
     </style>
 </head>
 <body>
+<div id="loadingScreen" style="display:none;">
 
+    <div class="loader"></div>
+
+    <div class="loading-text">
+        جاري تحميل البيانات...
+    </div>
+
+</div>
 <div id="mainScreen" class="screen">
     <div class="logo-container" id="companyLogo">
         <div class="logo-icon">🏢</div>
@@ -522,25 +583,50 @@
 </div>
 
 <div id="branchScreen" class="screen hidden">
-    <button class="back-btn" onclick="showMainScreen()">🏠 العودة للرئيسية</button>
+
+    <button class="back-btn" onclick="showMainScreen()">
+        🏠 العودة للرئيسية
+    </button>
+
     <div class="icons-grid">
-        <div class="icon-card" onclick="openBranch(1)">
-            <div>🏪</div>
-            <h3>فرع الصبيخي</h3>
-            <div class="counter" id="branch1TotalCounter">0</div>
+
+        <div class="icon-card">
+
+            <div onclick="openBranch(1)" style="width:100%; cursor:pointer;">
+                <div>🏪</div>
+                <h3>فرع الصبيخي</h3>
+                <div class="counter" id="branch1TotalCounter">0</div>
+            </div>
+
+            <button class="clear-btn" onclick="clearBranchData(1)">
+                🗑 تصفير بيانات فرع الصبيخي
+            </button>
+
         </div>
-        <div class="icon-card" onclick="openBranch(2)">
-            <div>🏬</div>
-            <h3>فرع الصناعية</h3>
-            <div class="counter" id="branch2TotalCounter">0</div>
+
+        <div class="icon-card">
+
+            <div onclick="openBranch(2)" style="width:100%; cursor:pointer;">
+                <div>🏬</div>
+                <h3>فرع الصناعية</h3>
+                <div class="counter" id="branch2TotalCounter">0</div>
+            </div>
+
+            <button class="clear-btn" onclick="clearBranchData(2)">
+                🗑 تصفير بيانات فرع الصناعية
+            </button>
+
         </div>
+
     </div>
+
 </div>
 
 <div id="branchDetailsScreen" class="screen hidden">
     <button class="back-btn" id="backFromBranchBtn">🔙 رجوع للفروع</button>
     <div class="branch-header">
         <h2 id="branchTitle">فرع</h2>
+       
     </div>
     <div class="icons-grid" id="branchIconsContainer"></div>
 </div>
@@ -556,11 +642,7 @@
     </div>
     
     <div class="form-panel">
-     
-
-<div class="table-container">
-        </div>
-        <div id="cashCounters" style="
+<div id="cashCounters" style="
 display:none;
 grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
 gap:15px;
@@ -722,25 +804,60 @@ min-width:220px;
 </div>
 </div>
 </div>
-    <div class="table-container">
-        <table id="operationsTable">
-            <thead>
-                <tr>
-                    <th>رقم العملية</th>
-                    <th>المبلغ</th>
-                    <th>نوع الصرف</th>
-                    <th>مصدر الادخال</th>
-                    <th>اتجاه التحويل</th>
-                    <th>التاريخ</th>
-                    <th>حذف</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-          </table>
-    </div>
+<!-- شريط الأدوات فوق الجدول -->
+<div style="
+display:flex;
+justify-content:flex-start;
+direction:ltr;
+align-items:center;
+flex-wrap:wrap;
+gap:10px;
+margin:15px 0;
+">
+
+    <!-- زر التصفية -->
+    <button
+        class="danger"
+        onclick="clearCurrentTable()"
+        style="
+            padding:10px 18px;
+            border-radius:12px;
+            font-size:14px;
+            font-weight:bold;
+        "
+    >
+        🗑️ تصفير الجدول
+    </button>
+
+</div>
+
+<!-- الجدول -->
+<div class="table-container">
+
+    <table id="operationsTable">
+
+        <thead>
+            <tr>
+                <th>رقم العملية</th>
+                <th>المبلغ</th>
+                <th>نوع الصرف</th>
+                <th>مصدر الادخال</th>
+                <th>اتجاه التحويل</th>
+                <th>التاريخ</th>
+                <th>حذف</th>
+            </tr>
+        </thead>
+
+        <tbody id="tableBody"></tbody>
+
+    </table>
+
 </div>
 
 <script>
+    const API_URL =
+"https://script.google.com/macros/s/AKfycbyHqSsvpGhpmCl_JOU8klQIeU9pPEazRorn3UMi9o9-y_idqseNkaaysGfqGZdeGvby/exec";
+
     // نظام الرسائل الداخلية
     function showToast(message, type = 'success') {
         // إزالة أي توست موجود
@@ -786,34 +903,61 @@ min-width:220px;
 
     let data = initializeData();
 
-    function loadData() {
-        const saved = localStorage.getItem("moneyManagerSystem");
-        if(saved) {
-            try {
-                const parsed = JSON.parse(saved);
-                if(parsed.branch1 && parsed.branch2) {
-                    data = parsed;
-                    if(!data.branch1.cash) data.branch1.cash = [];
-                    if(!data.branch2.cash) data.branch2.cash = [];
-                    if(!data.branch1.transfers) data.branch1.transfers = [];
-                    if(!data.branch2.transfers) data.branch2.transfers = [];
-                } else {
-                    data = initializeData();
-                }
-            } catch(e) {
-                data = initializeData();
-            }
-        } else {
-            data = initializeData();
-        }
-        saveData();
-    }
-    
-    function saveData() {
-        localStorage.setItem("moneyManagerSystem", JSON.stringify(data));
+async function loadData() {
+
+    try {
+
+        const response =
+        await fetch(API_URL + "?action=load");
+
+        const result =
+        await response.json();
+
+        data = result;
+
         updateAllCounters();
-        updateWindowTotal();
+
+        return true;
+
+    } catch(err) {
+
+        console.log(err);
+
+        data = initializeData();
+
+        showToast(
+            "❌ فشل تحميل البيانات",
+            "error"
+        );
+
+        return false;
     }
+}
+   async function saveData() {
+
+    try {
+
+        await fetch(API_URL + "?action=save", {
+
+            method: "POST",
+
+            body: JSON.stringify(data)
+        });
+
+        updateAllCounters();
+
+        updateWindowTotal();
+
+    } catch(err) {
+
+        console.log(err);
+
+        showToast(
+            "فشل حفظ البيانات",
+            "error"
+        );
+    }
+}
 
     function getTotalAmount(arr) {
         if(!arr || !Array.isArray(arr)) return 0;
@@ -1387,7 +1531,9 @@ function quickAddOperation(card, type){
             return;
         }
 
-        data[`branch${fromBranch}`].transfers.push({
+        data[`branch${fromBranch}`]
+.transfers.push({
+    linkedNumber: number,
 
             number,
             amount: -amount,
@@ -1400,7 +1546,9 @@ function quickAddOperation(card, type){
             : "من فرع الصناعية ⟵ فرع الصبيخي"
         });
 
-        data[`branch${toBranch}`].transfers.push({
+       data[`branch${toBranch}`]
+.transfers.push({
+    linkedNumber: number,
 
             number: number + "-IN",
             amount,
@@ -1631,7 +1779,7 @@ function quickAddOperation(card, type){
     .classList.remove('hidden');
     // إظهار الفلاتر فقط في المخزون
 document.getElementById('inventoryFilters').style.display =
-(type === 'inventory' || type === 'transfers')
+(type === 'transfers')
 ? 'block'
 : 'none';
 }
@@ -1642,7 +1790,17 @@ document.getElementById('inventoryFilters').style.display =
             currentTableData = [];
         } else {
             currentTableData = [...branchData];
-            currentTableData.sort((a,b) => b.date.localeCompare(a.date));
+currentTableData.sort((a,b)=>{
+
+    let da =
+    convertDateToComparable(a.date) || "";
+
+    let db =
+    convertDateToComparable(b.date) || "";
+
+    return db.localeCompare(da);
+
+});
         }
         renderTable(currentTableData);
         updateWindowTotal();
@@ -1658,16 +1816,8 @@ document.getElementById('inventoryFilters').style.display =
     const actionsHeader =
     document.querySelector('#operationsTable thead tr th:last-child');
 
-    // إخفاء عمود الحذف في الصندوق والتحويلات
-    if(currentOpType === 'cash'
-    || currentOpType === 'transfers'){
-
-        actionsHeader.style.display = 'none';
-
-    }else{
-
-        actionsHeader.style.display = '';
-    }
+    // إظهار عمود الحذف دائماً
+    actionsHeader.style.display = '';
 
     for(let item of dataArray) {
 
@@ -1676,9 +1826,7 @@ document.getElementById('inventoryFilters').style.display =
         row.insertCell(0).innerText =
         item.number;
 
-        // =====================
-        // تنسيق المبلغ
-        // =====================
+        // المبلغ
         let amountCell =
         row.insertCell(1);
 
@@ -1690,79 +1838,65 @@ document.getElementById('inventoryFilters').style.display =
             if(item.amount < 0){
 
                 amountCell.style.color = 'red';
-                amountCell.style.fontWeight = 'bold';
 
             }else{
 
                 amountCell.style.color = '#0066ff';
-                amountCell.style.fontWeight = 'bold';
             }
+
+            amountCell.style.fontWeight = 'bold';
         }
 
+        // نوع الصرف
         let expenseCell =
         row.insertCell(2);
 
         expenseCell.innerText =
         item.expenseType || '---';
 
+        // المصدر
         row.insertCell(3).innerText =
-        item.source;
+        item.source || '---';
 
+        // الاتجاه
         let directionCell =
         row.insertCell(4);
 
-        if(item.amount < 0){
+        directionCell.innerHTML =
+        item.transferDirection || '---';
 
-            directionCell.innerHTML =
-            `<span style="color:red;font-weight:bold;">
-                ${item.transferDirection || 'تحويل صادر'}
-            </span>`;
-
-        }else{
-
-            directionCell.innerHTML =
-            `<span style="color:#0066ff;font-weight:bold;">
-                ${item.transferDirection || 'تحويل وارد'}
-            </span>`;
-        }
-
+        // التاريخ
         row.insertCell(5).innerText =
         item.date;
 
-        // =====================
-        // عدم إنشاء عمود الحذف
-        // =====================
-        if(currentOpType !== 'cash'
-        && currentOpType !== 'transfers'){
+        // الحذف
+        let actionsCell =
+        row.insertCell(6);
 
-            let actionsCell =
-            row.insertCell(6);
+        actionsCell.className =
+        'action-buttons';
 
-            actionsCell.className =
-            'action-buttons';
+        let delBtn =
+        document.createElement('button');
 
-            let delBtn =
-            document.createElement('button');
+        delBtn.innerText =
+        '🗑️ حذف';
 
-            delBtn.innerText =
-            '🗑️ حذف';
+        delBtn.className =
+        'danger';
 
-            delBtn.className =
-            'danger';
+        delBtn.onclick =
+        () => deleteOperation(item.number);
 
-            delBtn.onclick =
-            () => deleteOperation(item.number);
-
-            actionsCell.appendChild(delBtn);
-        }
+        actionsCell.appendChild(delBtn);
     }
 }
 
 function convertDateToComparable(dateStr){
 
-    if(!dateStr) return null;
+    if(!dateStr || typeof dateStr !== 'string')
+        return "";
 
-    // إزالة الوقت
     let onlyDate =
     dateStr.split(' ')[0];
 
@@ -1770,16 +1904,16 @@ function convertDateToComparable(dateStr){
     onlyDate.split('/');
 
     if(parts.length !== 3)
-        return null;
+        return "";
 
     let day =
-    parts[0].padStart(2,'0');
+    String(parts[0]).padStart(2,'0');
 
     let month =
-    parts[1].padStart(2,'0');
+    String(parts[1]).padStart(2,'0');
 
     let year =
-    parts[2];
+    String(parts[2]);
 
     return `${year}-${month}-${day}`;
 }
@@ -2230,61 +2364,544 @@ document.getElementById('filteredTotalAmount')
     );
 }
     
-    function deleteOperation(number) {
-        if(currentOpType === 'transfers') {
-            showToast("⚠️ لا يمكن حذف عمليات التحويل مباشرة حفاظاً على سلامة المخزون.", "warning");
-            return;
-        }
-        
-        if(currentOpType === 'cash') {
-            showToast("⚠️ لا يمكن حذف عمليات الصندوق مباشرة حفاظاً على سلامة المخزون.", "warning");
-            return;
-        }
-        
-        if(!confirm("⚠️ حذف العملية سيؤثر على المخزون، هل أنت متأكد؟")) return;
-        let arr = data[`branch${currentBranch}`][currentOpType];
-        let index = arr.findIndex(i => i.number === number);
-        if(index !== -1) {
-            let deletedItem = arr[index];
-            let amount = deletedItem.amount;
-            
-            if(currentOpType === 'sales') {
-                let invArr = data[`branch${currentBranch}`].inventory;
-                let foundInv = invArr.findLast(i => i.source && i.source.includes(`إضافة من المشتريات (رقم ${number})`));
-                if(foundInv) {
-                    let idx = invArr.indexOf(foundInv);
-                    if(idx !== -1) invArr.splice(idx, 1);
-                }
-                arr.splice(index, 1);
-                showToast(`🗑️ تم حذف عملية البيع وعكس تأثيرها: خصم ${amount} من المخزون.`, "warning");
-            }
-            else if(currentOpType === 'purchases' || currentOpType === 'expenses') {
-                let invArr = data[`branch${currentBranch}`].inventory;
-                let foundInv = invArr.findLast(i => i.source && i.source.includes(`خصم من ${currentOpType === 'purchases' ? 'المبيعات' : 'المصاريف'}`));
-                if(foundInv) {
-                    let idx = invArr.indexOf(foundInv);
-                    if(idx !== -1) invArr.splice(idx, 1);
-                }
-                arr.splice(index, 1);
-                showToast(`🗑️ تم حذف عملية ${currentOpType === 'purchases' ? 'الشراء' : 'المصروف'} وعكس تأثيرها: إضافة ${amount} إلى المخزون.`, "warning");
-            }
-            else {
-                arr.splice(index, 1);
-                showToast("🗑️ تم الحذف بنجاح", "success");
-            }
-            
-            saveData();
-            loadTableData();
-        }
+async function clearCurrentTable(){
+
+    let confirmClear =
+    confirm("⚠️ هل أنت متأكد من حذف جميع بيانات هذا الجدول؟");
+
+    if(!confirmClear) return;
+
+    // =========================
+    // التحويلات
+    // =========================
+    if(currentOpType === 'transfers'){
+
+        data[`branch${currentBranch}`].transfers = [];
+
+        showToast(
+            "🗑️ تم تصفية جدول التحويلات",
+            "warning"
+        );
+
+        saveData();
+
+        loadTableData();
+
+        updateTransferCounters();
+
+        return;
     }
+
+    // =========================
+    // الصندوق
+    // =========================
+    if(currentOpType === 'cash'){
+
+        data[`branch${currentBranch}`].cash = [];
+
+        showToast(
+            "🗑️ تم تصفية جدول الصندوق",
+            "warning"
+        );
+
+        saveData();
+
+        loadTableData();
+
+        updateCashCounters();
+
+        return;
+    }
+
+    // =========================
+    // المبيعات
+    // =========================
+    if(currentOpType === 'purchases'){
+
+        let total =
+        getTotalAmount(
+            data[`branch${currentBranch}`].purchases
+        );
+
+        // حذف المبيعات
+        data[`branch${currentBranch}`].purchases = [];
+
+        // إعادة المبلغ للمخزون
+        if(total > 0){
+
+            data[`branch${currentBranch}`].inventory.push({
+
+                number: "REV-PUR-ALL-" + Date.now(),
+
+                amount: total,
+
+                source: "استرجاع تصفية المبيعات",
+
+                date: getCurrentDateTime()
+            });
+        }
+
+        showToast(
+            "🗑️ تم تصفية جدول المبيعات وإرجاع المبلغ للمخزون",
+            "warning"
+        );
+
+        saveData();
+
+        loadTableData();
+
+        return;
+    }
+
+    // =========================
+    // المشتريات
+    // =========================
+    if(currentOpType === 'sales'){
+
+        let total =
+        getTotalAmount(
+            data[`branch${currentBranch}`].sales
+        );
+
+        data[`branch${currentBranch}`].sales = [];
+
+        // خصم الزيادة من المخزون
+        if(total > 0){
+
+            data[`branch${currentBranch}`].inventory.push({
+
+                number: "REV-SALES-ALL-" + Date.now(),
+
+                amount: -total,
+
+                source: "عكس تصفية المشتريات",
+
+                date: getCurrentDateTime()
+            });
+        }
+
+        showToast(
+            "🗑️ تم تصفية جدول المشتريات",
+            "warning"
+        );
+
+        saveData();
+
+        loadTableData();
+
+        return;
+    }
+
+    // =========================
+    // المصاريف
+    // =========================
+    if(currentOpType === 'expenses'){
+
+        let total =
+        getTotalAmount(
+            data[`branch${currentBranch}`].expenses
+        );
+
+        data[`branch${currentBranch}`].expenses = [];
+
+        // إعادة المبلغ للمخزون
+        if(total > 0){
+
+            data[`branch${currentBranch}`].inventory.push({
+
+                number: "REV-EXP-ALL-" + Date.now(),
+
+                amount: total,
+
+                source: "استرجاع تصفية المصاريف",
+
+                date: getCurrentDateTime()
+            });
+        }
+
+        showToast(
+            "🗑️ تم تصفية جدول المصاريف",
+            "warning"
+        );
+
+        saveData();
+
+        loadTableData();
+
+        return;
+    }
+
+    // =========================
+    // المخزون
+    // =========================
+    if(currentOpType === 'inventory'){
+
+        data[`branch${currentBranch}`].inventory = [];
+
+        showToast(
+            "🗑️ تم تصفية جدول المخزون",
+            "warning"
+        );
+
+        saveData();
+
+        loadTableData();
+
+        return;
+    }
+
+    // =========================
+    // افتراضي
+    // =========================
+    data[`branch${currentBranch}`][currentOpType] = [];
+
+    saveData();
+
+    loadTableData();
+
+    showToast(
+        "🗑️ تم تصفية الجدول",
+        "warning"
+    );
+}
+
+  function deleteOperation(number) {
+
+    if(!confirm("⚠️ هل أنت متأكد من حذف العملية؟"))
+        return;
+
+    // =====================================
+    // التحويلات
+    // =====================================
+    if(currentOpType === 'transfers'){
+
+        let currentArr =
+        data[`branch${currentBranch}`].transfers;
+
+        let item =
+        currentArr.find(i => i.number === number);
+
+        if(!item){
+
+            showToast("العملية غير موجودة","error");
+            return;
+        }
+
+        let amount =
+        Math.abs(item.amount);
+
+        let fromBranch =
+        item.fromBranch;
+
+        let toBranch =
+        item.toBranch;
+
+        // حذف التحويل من الفرعين
+        data[`branch${fromBranch}`].transfers =
+        data[`branch${fromBranch}`].transfers
+        .filter(i =>
+            i.number !== number &&
+            i.number !== number + "-IN" &&
+            i.number.replace("-IN","") !== number
+        );
+
+        data[`branch${toBranch}`].transfers =
+        data[`branch${toBranch}`].transfers
+        .filter(i =>
+            i.number !== number &&
+            i.number !== number + "-IN" &&
+            i.number.replace("-IN","") !== number
+        );
+
+        // إرجاع المخزون للفرع المصدر
+        data[`branch${fromBranch}`].inventory.push({
+
+            number: "REV-TRF-" + Date.now(),
+
+            amount: amount,
+
+            source: "إلغاء تحويل",
+
+            date: getCurrentDateTime()
+        });
+
+        // خصم من الفرع المستقبل
+        data[`branch${toBranch}`].inventory.push({
+
+            number: "REV-TRF2-" + Date.now(),
+
+            amount: -amount,
+
+            source: "إلغاء تحويل",
+
+            date: getCurrentDateTime()
+        });
+
+        saveData();
+
+        loadTableData();
+
+        updateTransferCounters();
+
+        showToast(
+            "🗑️ تم حذف التحويل وعكس العملية",
+            "success"
+        );
+
+        return;
+    }
+
+    // =====================================
+    // الصندوق
+    // =====================================
+    if(currentOpType === 'cash'){
+
+        let cashArr =
+        data[`branch${currentBranch}`].cash;
+
+        let item =
+        cashArr.find(i => i.number === number);
+
+        if(!item){
+
+            showToast("العملية غير موجودة","error");
+            return;
+        }
+
+        // حذف العملية من الصندوق
+        data[`branch${currentBranch}`].cash =
+        cashArr.filter(i => i.number !== number);
+
+        // إذا كانت من المبيعات
+      if(item.source &&
+item.source.includes("إيداع تلقائي من المبيعات")){
+
+    let saleAmount =
+    Math.abs(item.amount);
+
+    // حذف عملية المبيعات الأصلية
+    let purchasesArr =
+    data[`branch${currentBranch}`].purchases;
+
+    let saleItem =
+    purchasesArr.find(p => p.amount === saleAmount);
+
+    if(saleItem){
+
+        purchasesArr =
+        purchasesArr.filter(p =>
+            p.number !== saleItem.number
+        );
+
+        data[`branch${currentBranch}`].purchases =
+        purchasesArr;
+
+        // إرجاع المبلغ للمخزون
+        data[`branch${currentBranch}`].inventory.push({
+
+            number: "REV-SALE-" + Date.now(),
+
+            amount: saleAmount,
+
+            source: "إلغاء مبيعات من الصندوق",
+
+            date: getCurrentDateTime()
+        });
+    }
+
+    showToast(
+        "🗑️ تم حذف الإيداع وحذف المبيعات وإرجاع المبلغ للمخزون",
+        "warning"
+    );
+
+        }else{
+
+            showToast(
+                "🗑️ تم حذف العملية من الصندوق",
+                "success"
+            );
+        }
+
+        saveData();
+
+        loadTableData();
+
+        updateCashCounters();
+
+        return;
+    }
+
+    // =====================================
+    // المشتريات
+    // =====================================
+    let arr =
+    data[`branch${currentBranch}`][currentOpType];
+
+    let index =
+    arr.findIndex(i => i.number === number);
+
+    if(index === -1) return;
+
+    let deletedItem =
+    arr[index];
+
+    let amount =
+    deletedItem.amount;
+
+    // المشتريات
+    if(currentOpType === 'sales'){
+
+        data[`branch${currentBranch}`].inventory.push({
+
+            number: "REV-SALES-" + Date.now(),
+
+            amount: -amount,
+
+            source: "عكس المشتريات",
+
+            date: getCurrentDateTime()
+        });
+    }
+
+    // المبيعات أو المصاريف
+    if(currentOpType === 'purchases'
+    || currentOpType === 'expenses'){
+
+        data[`branch${currentBranch}`].inventory.push({
+
+            number: "REV-PUR-" + Date.now(),
+
+            amount: amount,
+
+            source: "عكس خصم المخزون",
+
+            date: getCurrentDateTime()
+        });
+    }
+
+    arr.splice(index,1);
+
+    saveData();
+
+    loadTableData();
+
+    showToast(
+        "🗑️ تم حذف العملية بنجاح",
+        "success"
+    );
+}
     
     document.getElementById('backFromBranchBtn').onclick = () => showBranchScreen();
     document.getElementById('backToBranchFromOp').onclick = () => showBranchDetails(currentBranch);
     
-    loadData();
-    showMainScreen();
-    document.getElementById('companyLogo').onclick = () => showBranchScreen();
-    updateAllCounters();
+async function startApp() {
+
+    // إظهار شاشة التحميل
+ document.getElementById('companyLogo').onclick =
+async function () {
+
+    try {
+
+        // إظهار اللودنج
+        document.getElementById('loadingScreen')
+        .style.display = 'flex';
+
+        // تحميل البيانات
+        await loadData();
+
+        // تحديث العدادات
+        updateAllCounters();
+
+        // فتح شاشة الفروع
+        showBranchScreen();
+
+    } catch(err){
+
+        console.log(err);
+
+        showToast(
+            "فشل تحميل البيانات",
+            "error"
+        );
+
+    } finally {
+
+        // إخفاء اللودنج دائماً
+        document.getElementById('loadingScreen')
+        .style.display = 'none';
+    }
+};
+}
+
+startApp();
+
+async function clearBranchData(branch) {
+
+    const confirmDelete = confirm(
+        "هل أنت متأكد من تصفية جميع بيانات هذا الفرع؟"
+    );
+
+    if (!confirmDelete) return;
+
+    try {
+
+        // إظهار اللودنج
+        document.getElementById('loadingScreen')
+        .style.display = 'flex';
+
+        const response = await fetch(
+
+            API_URL +
+            "?action=clearBranch&branch=" +
+            branch,
+
+            {
+                method: "POST"
+            }
+        );
+
+        const result = await response.json();
+
+        if (result.success) {
+
+            // إعادة تحميل البيانات
+            await loadData();
+
+            // تحديث العدادات
+            updateAllCounters();
+
+            // تحديث شاشة الفروع
+            showBranchScreen();
+
+            showToast(
+                "✅ تم تصفية بيانات الفرع بنجاح",
+                "success"
+            );
+
+        } else {
+
+            showToast(
+                "❌ حدث خطأ أثناء التصفية",
+                "error"
+            );
+        }
+
+    } catch (err) {
+
+        console.log(err);
+
+        showToast(
+            "❌ تعذر الاتصال بالسيرفر",
+            "error"
+        );
+
+    } finally {
+
+        // إخفاء اللودنج
+        document.getElementById('loadingScreen')
+        .style.display = 'none';
+    }
+}
 </script>
 </body>
 </html>
