@@ -560,9 +560,60 @@
         transform:rotate(360deg);
     }
 }
+/* زر إغلاق الصفحة */
+#closeAppBtn{
+    position:fixed;
+    bottom:15px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:99999;
+
+    background:#dc3545;
+    color:white;
+
+    border:none;
+    border-radius:16px;
+
+    padding:14px 28px;
+
+    font-size:16px;
+    font-weight:bold;
+
+    cursor:pointer;
+
+    box-shadow:0 4px 15px rgba(0,0,0,0.25);
+
+    transition:0.2s;
+}
+
+#closeAppBtn:hover{
+    transform:translateX(-50%) scale(1.05);
+}
+/* للهاتف */
+@media (max-width:768px){
+
+    #closeAppBtn{
+
+        font-size:15px;
+
+        padding:15px;
+
+        position:fixed;
+    bottom:15px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:99999;
+
+        width:calc(100% - 16px);
+    }
+}
+
     </style>
 </head>
 <body>
+    <button id="closeAppBtn" onclick="closeApplication()">
+    ❌ إغلاق
+</button>
 <div id="loadingScreen" style="display:none;">
 
     <div class="loader"></div>
@@ -2926,6 +2977,20 @@ async function clearBranchData(branch) {
         document.getElementById('loadingScreen')
         .style.display = 'none';
     }
+}
+// إغلاق الصفحة بالكامل
+// إغلاق الصفحة بالكامل
+function closeApplication(){
+
+    // محاولة إغلاق النافذة
+    window.close();
+
+    // إذا لم تغلق (بعض المتصفحات تمنع الإغلاق)
+    setTimeout(() => {
+
+        window.location.href = "about:blank";
+
+    }, 300);
 }
 </script>
 </body>
