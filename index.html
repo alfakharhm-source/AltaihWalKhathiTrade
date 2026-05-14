@@ -590,29 +590,64 @@
     transform:translateX(-50%) scale(1.05);
 }
 /* للهاتف */
-@media (max-width:768px){
+@media (max-width: 768px){
 
     #closeAppBtn{
-
-        font-size:15px;
-
-        padding:15px;
-
-        position:fixed;
-    bottom:15px;
-    left:50%;
-    transform:translateX(-50%);
-    z-index:99999;
-
-        width:calc(100% - 16px);
+        display:none !important;
     }
-}
 
+}
+@media (min-width: 992px){
+
+    /* شاشة الفروع الرئيسية */
+    #branchScreen .icons-grid{
+
+        grid-template-columns:
+        repeat(2, minmax(420px, 520px));
+
+        justify-content:center;
+
+        gap:40px;
+    }
+
+    #branchScreen .icon-card{
+
+        padding:45px 35px;
+
+        min-height:320px;
+
+        border-radius:30px;
+    }
+
+    #branchScreen .icon-card h3{
+
+        font-size:32px;
+
+        margin-top:20px;
+    }
+
+    #branchScreen .counter{
+
+        font-size:38px;
+
+        margin-top:20px;
+    }
+
+    #branchScreen .clear-btn{
+
+        font-size:18px;
+
+        padding:14px 20px;
+
+        margin-top:25px;
+    }
+
+}
     </style>
 </head>
 <body>
     <button id="closeAppBtn" onclick="closeApplication()">
-    ❌ إغلاق
+    ❌ إغلاق الصفحة
 </button>
 <div id="loadingScreen" style="display:none;">
 
@@ -1343,10 +1378,51 @@ function toggleQuickAdd(btn, type){
         }
     });
 
+    const isOpening =
+    box.style.display === 'none';
+
     box.style.display =
-    box.style.display === 'none'
-    ? 'block'
-    : 'none';
+    isOpening ? 'block' : 'none';
+
+    // عند الفتح ركز على حقل المبلغ
+    if(isOpening){
+
+        setTimeout(()=>{
+
+            let amountInput =
+            box.querySelector('.quick-amount');
+
+            if(amountInput){
+
+                amountInput.focus();
+
+                amountInput.select();
+            }
+
+        },100);
+
+        // تنفيذ الإدخال عند الضغط Enter
+        const inputs =
+        box.querySelectorAll('input, select');
+
+        inputs.forEach(input=>{
+
+            input.onkeydown = function(e){
+
+                if(e.key === 'Enter'){
+
+                    e.preventDefault();
+
+                    quickAddOperation(
+                        btn.closest('.icon-card'),
+                        type
+                    );
+                }
+            };
+
+        });
+
+    }
 }
 
 function cancelQuickAdd(btn){
